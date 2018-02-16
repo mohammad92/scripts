@@ -1,0 +1,143 @@
+#!/bin/bash
+# By Mohammad Afaneh (2018), Afaneh92 @ XDA Developers.
+# Source code https://github.com/osm0sis/Android-Image-Kitchen/tree/AIK-Linux
+#
+# Rename AIK_Linux_menu to menu
+# sh ./menu and press "d" to downlad required files
+#
+# AIK-Linux menu v0.1
+
+# Clear the console before starting
+  clear
+
+# Location
+  export DIR=`readlink -f .`;
+
+# Color
+  On_Blue=`echo -e "\033[44m"`        # On Blue
+  Red=`echo -e "\033[0;31m"`          # Red
+  Blue=`echo -e "\033[0;34m"`         # Blue
+  Color_Off=`echo -e "\033[0m"`       # Text Clear
+
+downloadaik() {
+  delete=($(ls *.sh *.txt 2>/dev/null))
+  for f in "${delete[@]}"; do
+    rm -rf $DIR/$f
+  done
+  fname=$(basename $(wget -qO- "https://basketbuild.com/devs/osm0sis/aik" | cat | grep ">Download<" | grep "AIK-Linux" | cut -d'"' -f4))
+  furl="https://basketbuild.com/uploads/devs/osm0sis/aik/$fname"
+  echo "Downloading $fname"
+  (wget -O "$fname" "$furl" 2>&1) >/dev/null
+  echo "Extracting $fname"
+  tar -xf $DIR/$fname 2>&1 >/dev/null
+  mv $DIR/AIK-Linux/* $DIR
+  echo "Cleaning up files"
+  rm -rf $DIR/$fname $DIR/AIK-Linux
+  echo "Done"
+}
+
+chooseimg() {
+  findimg=""
+  findimg=($(ls *.img *.elf 2>/dev/null))
+  declare -i i=1
+  shift 2
+  for e in "${findimg[@]}"; do
+    echo "$i) $e"
+    i=i+1
+  done
+  echo ""
+  read -p "Select: " REPLY
+  i="$REPLY"
+  if [[ $i -gt 0 && $i -le ${#findimg[@]} ]]; then
+    if [[ -e $DIR/image-new.img && "${findimg[$i-1]}"=="image-new.img" && ("$enterLetter" == "u" || "$enterLetter" == "U") ]]; then
+      read -p "${Red}Rename image-new.img and try again!, Press ENTER to return to Main menu.${Color_Off}"
+    else
+      export v="${findimg[$i-1]}"
+      export w=$(basename $v | cut -d'.' -f1)
+    fi
+  else
+    read -p "${Red}Invalid option, Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+  fi
+}
+
+# Menu
+  echo "${On_Blue}AIK-Linux menu${Color_Off}"
+  echo " "
+  echo " u. Unpack *.img or *.elf"
+  echo " r. Repack"
+  echo " c. Cleanup"
+  echo " "
+  echo " f. fastboot *.img or *.elf"
+  echo " s. fastboot reboot"
+  echo " a. adb reboot"
+  echo " "
+if [[ ! -d $DIR/bin ]]; then
+  echo " d. Download AIK-Linux"
+fi
+  echo " z. Restart menu"
+  echo " x. Exit menu"
+  echo " "
+# Read the letter the user gives
+  read  -p "Select: " enterLetter
+  echo " "
+
+# Unpack *.img || *.elf
+  if [[ "$enterLetter" == "u" || "$enterLetter" == "U" ]]; then
+    chooseimg
+    $DIR/unpackimg.sh --nosudo $v
+    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+
+# Repack
+  elif [[ "$enterLetter" == "r" || "$enterLetter" == "R" ]]; then
+    $DIR/repackimg.sh
+    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+
+# Cleanup
+  elif [[ "$enterLetter" == "c" || "$enterLetter" == "C" ]]; then
+    $DIR/cleanup.sh
+    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+
+# fastboot *.img || *.elf
+  elif [[ "$enterLetter" == "f" || "$enterLetter" == "F" ]]; then
+    chooseimg
+    fastboot flash $w $DIR/$v
+    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+
+# fastboot reboot
+  elif [[ "$enterLetter" == "s" || "$enterLetter" == "S" ]]; then
+    fastboot reboot
+    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+
+# adb reboot
+  elif [[ "$enterLetter" == "a" || "$enterLetter" == "A" ]]; then
+    adb reboot
+    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+
+# Download AIK-Linux
+  elif [[ "$enterLetter" == "d" || "$enterLetter" == "D" ]]; then
+    downloadaik
+    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+
+# Restart
+  elif [[ "$enterLetter" == "z" || "$enterLetter" == "Z" ]]; then
+    echo "Restarting menu"
+    $DIR/menu
+
+# Exit
+  elif [[ "$enterLetter" == "x" || "$enterLetter" == "x" ]]; then
+    echo "Exiting menu"
+    exit 0
+
+# Other choice
+  else
+    read -p "${Red}Invalid option, Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+  fi

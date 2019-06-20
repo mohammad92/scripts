@@ -1,11 +1,11 @@
 #!/bin/bash
-# By Mohammad Afaneh (2018), Afaneh92 @ XDA Developers.
+# By Mohammad Afaneh (2019), Afaneh92 @ XDA Developers.
 # Source code https://github.com/osm0sis/Android-Image-Kitchen/tree/AIK-Linux
 #
 # Rename AIK_Linux_menu to menu
 # sh ./menu and press "d" to downlad required files
 #
-# AIK-Linux menu v0.1
+# AIK-Linux menu v0.2
 
 # Clear the console before starting
   clear
@@ -24,15 +24,17 @@ downloadaik() {
   for f in "${delete[@]}"; do
     rm -rf $DIR/$f
   done
-  fname=$(basename $(wget -qO- "https://basketbuild.com/devs/osm0sis/aik" | cat | grep ">Download<" | grep "AIK-Linux" | cut -d'"' -f4))
-  furl="https://basketbuild.com/uploads/devs/osm0sis/aik/$fname"
+  fname=aik.tar.gz
+  furl=$(wget -qO- "https://forum.xda-developers.com/showthread.php?t=2073775" | cat | grep "AIK-Linux\.zip\|AIK-Linux-" | cut -d'"' -f2 | grep http)
   echo "Downloading $fname"
   (wget -O "$fname" "$furl" 2>&1) >/dev/null
   echo "Extracting $fname"
   tar -xf $DIR/$fname 2>&1 >/dev/null
   mv $DIR/AIK-Linux/* $DIR
   echo "Cleaning up files"
-  rm -rf $DIR/$fname $DIR/AIK-Linux
+  if [[ -e $DIR/$fname && -d $DIR/AIK-Linux ]]; then
+    rm -rf $DIR/$fname $DIR/AIK-Linux
+  fi
   echo "Done"
 }
 

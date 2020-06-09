@@ -5,7 +5,7 @@
 # Rename AIK_Linux_menu to menu
 # sh ./menu and press "d" to downlad required files
 #
-# AIK-Linux menu v0.3
+# AIK-Linux menu v0.4
 
 # Clear the console before starting
   clear
@@ -48,7 +48,7 @@ downloadaik() {
 
 chooseimg() {
   findimg=""
-  findimg=($(ls *.img *.elf 2>/dev/null))
+  findimg=($(ls *.img *.elf *.win *.sin 2>/dev/null))
   declare -i i=1
   shift 2
   for e in "${findimg[@]}"; do
@@ -63,8 +63,27 @@ chooseimg() {
       read -p "${Red}Rename image-new.img and try again!, Press ENTER to return to Main menu.${Color_Off}"
     else
       export v="${findimg[$i-1]}"
-      export w=$(basename $v | cut -d'.' -f1)
     fi
+  else
+    read -p "${Red}Invalid option, Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+  fi
+}
+
+choosepart() {
+  declare -i i=1
+  shift 2
+  findpart=""
+  findpart=(boot kernel ramdisk recovery recovery_ramdisk)
+  for e in "${findpart[@]}"; do
+    echo "$i) $e"
+    i=i+1
+  done
+  echo ""
+  read -p "Select: " REPLY
+  i="$REPLY"
+  if [[ $i -gt 0 && $i -le ${#findpart[@]} ]]; then
+    export w="${findimg[$i-1]}"
   else
     read -p "${Red}Invalid option, Press ENTER to return to Main menu.${Color_Off}"
     $DIR/menu
@@ -77,11 +96,12 @@ chooseimg() {
 if [[ ! -d $DIR/bin || ! -f $DIR/cleanup.sh || ! -f $DIR/repackimg.sh || ! -f $DIR/unpackimg.sh ]]; then
   echo " d. Download AIK-Linux"
 else
-  echo " u. Unpack *.img or *.elf"
+  echo " u. Unpack *.img, *.elf, *.win or *.sin"
+  echo " n. Unpack *.img, *.elf, *.win or *.sin without --nosudo"
   echo " r. Repack"
   echo " c. Cleanup"
   echo " "
-  echo " f. fastboot *.img or *.elf"
+  echo " f. fastboot flash *.img, *.elf, *.win or *.sin"
   echo " s. fastboot reboot"
   echo " a. adb reboot"
 if [[  "$local_version" != "$online_version" ]]; then
@@ -96,10 +116,18 @@ fi
   read  -p "Select: " enterLetter
   echo " "
 
-# Unpack *.img || *.elf
+# Unpack
   if [[ "$enterLetter" == "u" || "$enterLetter" == "U" ]]; then
     chooseimg
     $DIR/unpackimg.sh --nosudo $v
+    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+
+# Unpack without --nosudo
+  elif [[ "$enterLetter" == "n" || "$enterLetter" == "N" ]]; then
+    chooseimg
+    $DIR/unpackimg.sh $v
+    sudo chmod -R 777 $DIR/ramdisk
     read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
     $DIR/menu
 
@@ -115,9 +143,10 @@ fi
     read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
     $DIR/menu
 
-# fastboot *.img || *.elf
+# fastboot flash
   elif [[ "$enterLetter" == "f" || "$enterLetter" == "F" ]]; then
     chooseimg
+    choosepart
     fastboot flash $w $DIR/$v
     read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
     $DIR/menu

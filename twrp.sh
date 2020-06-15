@@ -1,0 +1,39 @@
+#!/bin/bash
+# Script by Mohammad Afaneh, afaneh92@xda
+
+# Usage
+case $1 in
+  "") echo "Usage: build.sh [<device> clean|<device>]"; echo "example: build.sh klte clean"; exit 1;
+esac;
+
+# Set up the environment (variables and functions)
+source build/envsetup.sh
+
+for choice in ${LUNCH_MENU_CHOICES[@]}
+do
+  if [ "$choice" = "omni_$1-eng" ] ; then
+    export target=$1;
+  fi
+done
+
+# Parameter verification
+if [[ -z $target ]]; then
+   echo "You did not specify a necessary parameter (target)." && exit
+fi
+
+# Lunch target
+lunch omni_$target-eng
+
+# Clean the out dir;
+case $2 in
+  "clean") make clean;
+esac;
+
+# Fire up the building process and also log stdout and stderrout
+time mka recoveryimage 2>&1 | tee twrp_$target.log
+
+if [[ -d bootable/recovery/safestrap && -f out/target/product/$target/recovery.img ]]; then
+  mka safestrap_installer
+fi
+
+exit 0;

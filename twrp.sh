@@ -6,6 +6,8 @@ case $1 in
   "") echo "Usage: build.sh [<device> clean|<device>]"; echo "example: build.sh klte clean"; exit 1;
 esac;
 
+export ALLOW_MISSING_DEPENDENCIES=true;
+
 # Set up the environment (variables and functions)
 source build/envsetup.sh
 

@@ -3,15 +3,16 @@
 
 # Usage
 case $1 in
-  "") echo "Usage: build.sh [<device> clean|<device>]"; echo "example: build.sh klte clean"; exit 1;
+  "") echo "Usage: twrp.sh [<device> clean|<device>]"; echo "example: twrp.sh klte clean"; exit 1;
 esac;
 
-export ALLOW_MISSING_DEPENDENCIES=true;
+export ALLOW_MISSING_DEPENDENCIES=true
+export LC_ALL=C
 
 # Set up the environment (variables and functions)
 source build/envsetup.sh
 
-for choice in ${LUNCH_MENU_CHOICES[@]}
+for choice in ${LUNCH_MENU_CHOICES[@]} $(TARGET_BUILD_APPS= get_build_var COMMON_LUNCH_CHOICES)
 do
   if [ "$choice" = "omni_$1-eng" ] ; then
     export target=$1;

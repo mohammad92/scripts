@@ -3,6 +3,8 @@
 # ./gitget.sh https://github.com/TheMuppets/proprietary_vendor_samsung/tree/lineage-17.0/klte
 # afaneh92 @ xda-developers
 
+dpkg -l "subversion" &> /dev/null; [ $? = '1' ] && { echo "svn not installed, installing now."; sudo apt-get install subversion; }
+
 case $1 in
   "") echo "usage: ./gitget.sh https://github.com/TheMuppets/proprietary_vendor_samsung/tree/lineage-17.0/klte"; exit 1;
 esac;

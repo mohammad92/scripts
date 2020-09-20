@@ -39,4 +39,14 @@ if [[ -d bootable/recovery/safestrap && -f out/target/product/$target/recovery.i
   mka safestrap_installer
 fi
 
+# Set TWRP version to output files
+twrp_version="twrp-$(grep TW_MAIN_VERSION_STR bootable/recovery/variables.h | grep -v TW_DEVICE_VERSION | awk '{print $3}' | sed 's/"//g')-$(get_build_var TW_DEVICE_VERSION)-$target-$(date '+%Y-%m-%d')"
+if [[ -f $(get_build_var PRODUCT_OUT)/recovery.tar ]]; then
+  cp $(get_build_var PRODUCT_OUT)/recovery.tar $(get_build_var PRODUCT_OUT)/$twrp_version.tar
+fi
+
+if [[ -f $(get_build_var PRODUCT_OUT)/recovery.img ]]; then
+  cp $(get_build_var PRODUCT_OUT)/recovery.img $(get_build_var PRODUCT_OUT)/$twrp_version.img
+fi
+
 exit 0;

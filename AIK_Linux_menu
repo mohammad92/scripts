@@ -5,7 +5,7 @@
 # Rename AIK_Linux_menu to menu
 # sh ./menu and press "d" to downlad required files
 #
-# AIK-Linux menu v0.4
+# AIK-Linux menu v0.5
 
 # Clear the console before starting
   clear
@@ -20,7 +20,7 @@
   Color_Off=`echo -e "\033[0m"`       # Text Clear
 
 # Check local and online version
-  online_version=$(wget -qO- "https://forum.xda-developers.com/showthread.php?t=2073775" | cat | grep "AIK-Linux\.zip\|AIK-Linux-" | cut -d'-' -f3 | grep -oE 'v+[0-9]+.+[0-9]');
+  online_version=$(wget -qO- "https://forum.xda-developers.com/showthread.php?t=2073775" | cat | grep "AIK-Linux-v" | cut -d'-' -f4 | grep -oE 'v+[0-9]+.+[0-9]');
   if [[ -f $DIR/AIK-Linux-version ]]; then
     local_version=($(cat AIK-Linux-version 2>/dev/null));
   fi
@@ -32,7 +32,7 @@ downloadaik() {
   done
   rm -rf $DIR/bin
   fname=aik.tar.gz
-  furl=$(wget -qO- "https://forum.xda-developers.com/showthread.php?t=2073775" | cat | grep "AIK-Linux\.zip\|AIK-Linux-" | cut -d'"' -f2 | grep http)
+  furl=$(wget -qO- "https://forum.xda-developers.com/showthread.php?t=2073775" | cat | grep "AIK-Linux-v" | cut -d'"' -f2 | grep http | head -1)
   echo "Downloading $fname"
   (wget -O "$fname" "$furl" 2>&1) >/dev/null
   echo "Extracting $fname"
@@ -61,6 +61,7 @@ chooseimg() {
   if [[ $i -gt 0 && $i -le ${#findimg[@]} ]]; then
     if [[ -e $DIR/image-new.img && "${findimg[$i-1]}"=="image-new.img" && ("$enterLetter" == "u" || "$enterLetter" == "U") ]]; then
       read -p "${Red}Rename image-new.img and try again!, Press ENTER to return to Main menu.${Color_Off}"
+      $DIR/menu
     else
       export v="${findimg[$i-1]}"
     fi
